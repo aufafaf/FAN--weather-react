@@ -113,6 +113,7 @@
 
 
 
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface WeatherData {
@@ -208,7 +209,10 @@ function App() {
 
       <div className="bg-amber-400 p-6 rounded-lg min-w-[300px] min-h-[330px]">
         {loading && (
-          <p className="text-center">🔄 Loading...</p>
+          <div className="flex justify-center items-center gap-2">
+            <Loader2 className="animate-spin"/>
+            <p>Loading ... </p>
+          </div>
         )}
         
         {error && !loading && (
