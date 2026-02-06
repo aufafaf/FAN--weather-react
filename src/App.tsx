@@ -113,7 +113,7 @@
 
 
 
-import { Loader2 } from "lucide-react";
+import { Loader, Loader2, Search } from "lucide-react";
 import { useState } from "react";
 
 interface WeatherData {
@@ -201,13 +201,18 @@ function App() {
         <button
           type="submit"
           disabled={!city.trim() || loading}
-          className="border p-2 rounded-full py-1 px-5 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+          className="border p-2 rounded-full py-1 px-5 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2"
         >
-          {loading ? 'Loading...' : 'Search'}
+          {loading ? (
+            <Loader className="animate-spin"></Loader>
+          ) : (
+            <Search size={20}></Search>
+          )}
+          
         </button>
       </form>
 
-      <div className="bg-amber-400 p-6 rounded-lg min-w-[300px] min-h-[330px]">
+      <div className="bg-amber-400 p-6 rounded-lg min-w-75 min-h-82.5">
         {loading && (
           <div className="flex justify-center items-center gap-2">
             <Loader2 className="animate-spin"/>
