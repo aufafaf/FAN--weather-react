@@ -1,5 +1,6 @@
 import { Loader, Loader2, Search } from "lucide-react";
 import { useState } from "react";
+import { fetchWeather } from "./lib/fetch";
 
 interface WeatherData {
   temp: number;
@@ -11,70 +12,47 @@ interface WeatherData {
 }
 
 function App() {
-  const API_URL = import.meta.env.VITE_API_URL;
-  const API_KEY = import.meta.env.VITE_API_KEY;
-
   const [city, setCity] = useState("");
   const [data, setData] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    fetchWeather();
-  };
 
-  const fetchWeather = async () => {
-    // Validasi input kosong
     if (!city.trim()) {
       setError("Masukkan nama kota terlebih dahulu");
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(
-        `${API_URL}?q=${city}&appid=${API_KEY}&units=metric`,
-      );
-
-      if (response.status === 404) {
-        throw new Error("Kota tidak ditemukan");
-      }
-      
-      if (!response.ok) {
-        throw new Error("Terjadi kesalahan server");
-      }
-
-      const result = await response.json();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const weatherData: WeatherData = {
-        name: result.name,
-        temp: result.main.temp,
-        humidity: result.main.humidity,
-        wind: result.wind.speed,
-        icon: result.weather[0].icon,
-        description: result.weather[0].description,
-      };
-      
-      setData(weatherData);
-      
+      const weatherData = await fetchWeather(city);
+      // console.log(weatherData)
+      setData({
+        temp: weatherData.main.temp,
+        name: weatherData.name,
+        humidity: weatherData.main.humidity,
+        wind: weatherData.wind.speed,
+        icon: weatherData.weather[0].icon,
+        description: weatherData.weather[0].description,
+      });
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
         setError("Terjadi kesalahan yang tidak diketahui");
       }
-      setData(null); // Clear previous data on error
+      setData(null);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-10 flex flex-col justify-center items-center min-h-screen gap-5">
+    <div className="p-10 flex flex-col justify-center items-center min-h-screen gap-5 bg-violet-200">
       <form onSubmit={handleSubmit} className="flex gap-3">
         <input
           value={city}
@@ -93,33 +71,34 @@ function App() {
           ) : (
             <Search size={20}></Search>
           )}
-          
         </button>
       </form>
 
       <div className="bg-amber-400 p-6 rounded-lg min-w-75 min-h-82.5">
         {loading && (
           <div className="flex justify-center items-center gap-2">
-            <Loader2 className="animate-spin"/>
+            <Loader2 className="animate-spin" />
             <p>Loading ... </p>
           </div>
         )}
-        
+
         {error && !loading && (
           <p className="text-red-700 text-center font-semibold">{error}</p>
         )}
-        
+
         {data && !loading && !error && (
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-center">{data.name}</h2>
             <div className="flex justify-center">
-              <img 
+              <img
                 src={`https://openweathermap.org/img/wn/${data.icon}@2x.png`}
                 alt={data.description}
                 className="w-24 h-24"
               />
             </div>
-            <p className="text-4xl font-bold text-center">{Math.round(data.temp)}°C</p>
+            <p className="text-4xl font-bold text-center">
+              {Math.round(data.temp)}°C
+            </p>
             <p className="text-center capitalize">{data.description}</p>
             <div className="mt-4 space-y-1">
               <p>💧 Humidity: {data.humidity}%</p>
@@ -127,7 +106,7 @@ function App() {
             </div>
           </div>
         )}
-        
+
         {!loading && !error && !data && (
           <p className="text-center text-gray-700">
             Silahkan lakukan pencarian
